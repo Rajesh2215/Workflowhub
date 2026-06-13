@@ -2,18 +2,19 @@ import { Body, Controller, Get, Post } from '@nestjs/common';
 import { AuthServiceService } from './auth.service';
 import { RegisterDto } from '../dto/register.dto';
 import { LoginDto } from '../dto/login.dto';
+import { MessagePattern } from '@nestjs/microservices';
 
 @Controller('auth')
 export class AuthServiceController {
   constructor(private readonly authService: AuthServiceService) {}
 
-  @Post('register')
-  register(@Body() body: RegisterDto) {
+  @MessagePattern('auth.register')
+  register(body: RegisterDto) {
     return this.authService.register(body);
   }
   
-  @Post('login')
-  login(@Body() body: LoginDto) {
+  @MessagePattern('auth.login')
+  login(body: LoginDto) {
     return this.authService.login(body);
   }
   

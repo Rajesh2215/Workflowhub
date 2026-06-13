@@ -5,7 +5,6 @@ import { DatabaseModule } from './core/database.module';
 import { AuthModule } from './auth/auth.module';
 
 @Module({
-  imports: [AuthConfigModule, DatabaseModule, AuthModule],
-  controllers: [AuthServiceController],
+  imports: [AuthConfigModule, DatabaseModule, AuthModule]
 })
 export class AuthServiceModule {}
