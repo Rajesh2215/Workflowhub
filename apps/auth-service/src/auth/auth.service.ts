@@ -1,9 +1,9 @@
 import { ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Auth, AuthDocument } from './schema/auth.schema';
+import { Auth, AuthDocument } from '../schema/auth.schema';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
-import { JwtServiceCustom } from './core/jwt/jwt.service';
+import { JwtServiceCustom } from '../core/jwt/jwt.service';
 
 @Injectable()
 export class AuthServiceService {
