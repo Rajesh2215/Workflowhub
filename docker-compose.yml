@@ -1,0 +1,66 @@
+services:
+  api-gateway:
+    build: 
+      context: .
+      dockerfile: ./apps/api-gateway/Dockerfile
+    container_name: api-gateway
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./apps/api-gateway/.env
+    depends_on:
+      - auth-service
+      - task-service
+    networks:
+      - backend
+
+  auth-service:
+    build: 
+      context: .
+      dockerfile: ./apps/auth-service/Dockerfile
+    container_name: auth-service
+    env_file:
+      - ./apps/auth-service/.env
+    depends_on:
+      - mongo-auth
+    networks:
+      - backend
+  
+  task-service:
+    build: 
+      context: .
+      dockerfile: ./apps/task-service/Dockerfile
+    container_name: task-service
+    env_file:
+      - ./apps/task-service/.env
+    depends_on:
+      - mongo-task
+    networks:
+      - backend
+
+  mongo-auth:
+    image: mongo:7
+    container_name: mongo-auth
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_auth_data:/data/db
+    networks:
+      - backend
+
+  mongo-task:
+    image: mongo:7
+    container_name: mongo-task
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo_task_data:/data/db
+    networks:
+      - backend
+
+volumes:
+  mongo_auth_data:
+  mongo_task_data:
+
+networks:
+  backend:

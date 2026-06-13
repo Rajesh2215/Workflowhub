@@ -9,8 +9,8 @@ import { TaskController } from './task.controller';
         name: 'TASK_SERVICE',
         transport: Transport.TCP,
         options: {
-          host: 'localhost',
-          port: 3002,
+          host: process.env.TASK_SERVICE_HOST,
+          port: Number(process.env.TASK_SERVICE_PORT),
         },
       },
     ]),

@@ -1,16 +1,22 @@
-import { ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Auth, AuthDocument } from '../schema/auth.schema';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { JwtServiceCustom } from '@app/auth';
+import { RpcException } from '@nestjs/microservices';
 
 @Injectable()
 export class AuthServiceService {
   constructor(
     @InjectModel(Auth.name)
     private authModel: Model<AuthDocument>,
-    private jwtService: JwtServiceCustom
+    private jwtService: JwtServiceCustom,
   ) {}
 
   async register(body) {
@@ -37,7 +43,7 @@ export class AuthServiceService {
     return {
       message: 'Registered Successfully',
       user,
-      token
+      token,
     };
   }
 
@@ -45,12 +51,18 @@ export class AuthServiceService {
     const { email, password } = body;
     const user = await this.authModel.findOne({ email });
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new RpcException({
+        statusCode: 404,
+        message: 'User does not exists',
+      });
     }
 
     const checkPassword = await bcrypt.compare(password, user.password);
     if (!checkPassword) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new RpcException({
+        statusCode: 401,
+        message: 'Invalid credentials',
+      });
     }
     const token = this.jwtService.sign({
       id: user._id,
