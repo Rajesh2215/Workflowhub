@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Auth, AuthDocument } from '../schema/auth.schema';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
-import { JwtServiceCustom } from '../core/jwt/jwt.service';
+import { JwtServiceCustom } from '@app/auth';
 
 @Injectable()
 export class AuthServiceService {
