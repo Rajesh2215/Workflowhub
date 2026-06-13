@@ -1,12 +1,14 @@
 import { Controller, Get } from '@nestjs/common';
 import { TaskServiceService } from './task.service';
+import { MessagePattern } from '@nestjs/microservices';
+import { TaskDto } from '../dto/create-task.dto';
 
-@Controller()
+@Controller('task')
 export class TaskServiceController {
-  constructor(private readonly taskServiceService: TaskServiceService) {}
+  constructor(private readonly taskService: TaskServiceService) {}
 
-  @Get()
-  getHello(): string {
-    return this.taskServiceService.getHello();
+  @MessagePattern('task.create')
+  create(body: TaskDto) {
+    return this.taskService.create(body);
   }
 }
