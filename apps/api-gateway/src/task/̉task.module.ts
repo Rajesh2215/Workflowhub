@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { TaskController } from './task.controller';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { AuthJwtModule } from '@app/auth';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         }),
       },
     ]),
+    AuthJwtModule
   ],
   controllers: [TaskController],
 })
