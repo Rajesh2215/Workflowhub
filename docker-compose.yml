@@ -11,6 +11,7 @@ services:
     depends_on:
       - auth-service
       - task-service
+      - notification-service
       - rabbitmq
     networks:
       - backend
@@ -37,6 +38,19 @@ services:
       - ./apps/task-service/.env
     depends_on:
       - mongo-task
+      - rabbitmq
+    networks:
+      - backend
+
+  notification-service:
+    build: 
+      context: .
+      dockerfile: ./apps/notification-service/Dockerfile
+    container_name: notification-service
+    env_file:
+      - ./apps/notification-service/.env
+    depends_on:
+      - mongo-notification
       - rabbitmq
     networks:
       - backend
@@ -68,10 +82,21 @@ services:
       - mongo_task_data:/data/db
     networks:
       - backend
+  
+  mongo-notification:
+    image: mongo:7
+    container_name: mongo-notification
+    ports:
+      - "27019:27017"
+    volumes:
+      - mongo_notification_data:/data/db
+    networks:
+      - backend
 
 volumes:
   mongo_auth_data:
   mongo_task_data:
+  mongo_notification_data:
 
 networks:
   backend:
