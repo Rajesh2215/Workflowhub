@@ -1,18 +1,26 @@
 import { Module } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { ClientsModule, Transport } from '@nestjs/microservices';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
-  imports:[
-    ClientsModule.register([
+  imports: [
+    ClientsModule.registerAsync([
       {
         name: 'AUTH_SERVICE',
-        transport: Transport.TCP,
-        options: {
-          host: process.env.AUTH_SERVICE_HOST,
-          port: Number(process.env.AUTH_SERVICE_PORT),
-        },
-      }
+        imports: [ConfigModule],
+        inject: [ConfigService],
+        useFactory: (config: ConfigService) => ({
+          transport: Transport.RMQ,
+          options: {
+            urls: [config.get('RABBITMQ_URL')],
+            queue: 'auth_queue',
+            queueOptions: {
+              durable: true,
+            },
+          },
+        }),
+      },
     ]),
   ],
   controllers: [AuthController],

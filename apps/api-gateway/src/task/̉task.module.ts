@@ -1,17 +1,25 @@
 import { Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { TaskController } from './task.controller';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
-  imports:[
-    ClientsModule.register([
+  imports: [
+    ClientsModule.registerAsync([
       {
         name: 'TASK_SERVICE',
-        transport: Transport.TCP,
-        options: {
-          host: process.env.TASK_SERVICE_HOST,
-          port: Number(process.env.TASK_SERVICE_PORT),
-        },
+        imports: [ConfigModule],
+        inject: [ConfigService],
+        useFactory: (config: ConfigService) => ({
+          transport: Transport.RMQ,
+          options: {
+            urls: [config.get('RABBITMQ_URL')],
+            queue: 'task_queue',
+            queueOptions: {
+              durable: true,
+            },
+          },
+        }),
       },
     ]),
   ],

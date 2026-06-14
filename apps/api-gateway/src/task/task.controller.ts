@@ -10,7 +10,7 @@ export class TaskController {
 
   @Post('create')
   create(@Body() body: any) {
-    return this.taskClient.send('task.create', body);
+    return this.taskClient.emit('task.create', body);
   }
 
 }

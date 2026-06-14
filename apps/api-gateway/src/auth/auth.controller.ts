@@ -11,7 +11,7 @@ export class AuthController {
 
   @Post('register')
   register(@Body() body: any) {
-    return this.authClient.send('auth.register', body).pipe(
+    return this.authClient.emit('auth.register', body).pipe(
       catchError((err) => {
         console.log('🚀 ~ AuthController ~ register ~ err:', err);
         throw new HttpException(
@@ -24,7 +24,7 @@ export class AuthController {
 
   @Post('login')
   login(@Body() body: any) {
-    return this.authClient.send('auth.login', body).pipe(
+    return this.authClient.emit('auth.login', body).pipe(
       catchError((err) => {
         console.log('🚀 ~ AuthController ~ login ~ err:', err);
         throw new HttpException(

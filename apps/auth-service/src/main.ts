@@ -4,10 +4,13 @@ import { Transport } from '@nestjs/microservices';
 
 async function bootstrap() {
   const app = await NestFactory.createMicroservice(AuthServiceModule, {
-    transport: Transport.TCP,
+    transport: Transport.RMQ,
     options: {
-      host: '0.0.0.0',
-      port: 3001,
+      urls: [process.env.RABBITMQ_URL],
+      queue: 'auth_queue',
+      queueOptions: {
+        durable: true,
+      },
     },
   });
 

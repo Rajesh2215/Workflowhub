@@ -11,6 +11,7 @@ services:
     depends_on:
       - auth-service
       - task-service
+      - rabbitmq
     networks:
       - backend
 
@@ -23,6 +24,7 @@ services:
       - ./apps/auth-service/.env
     depends_on:
       - mongo-auth
+      - rabbitmq
     networks:
       - backend
   
@@ -35,9 +37,18 @@ services:
       - ./apps/task-service/.env
     depends_on:
       - mongo-task
+      - rabbitmq
     networks:
       - backend
 
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - backend
   mongo-auth:
     image: mongo:7
     container_name: mongo-auth
