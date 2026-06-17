@@ -10,6 +10,7 @@
     "build:api-gateway": "nest build api-gateway",
     "build:auth-service": "nest build auth-service",
     "build:task-service": "nest build task-service",
+    "build:notification-service": "nest build notification-service",
     "format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
