@@ -1,25 +1,25 @@
 import { NestFactory } from '@nestjs/core';
 import { NotificationServiceModule } from './notification-service.module';
 import { Transport } from '@nestjs/microservices';
+import { QUEUES } from '@app/shared';
 
 async function bootstrap() {
   const app = await NestFactory.createMicroservice(NotificationServiceModule, {
     transport: Transport.RMQ,
     options: {
       urls: [process.env.RABBITMQ_URL],
-      queue: 'notification_queue',
+      queue: QUEUES.NOTIFY.MAIN,
       noAck: false,
       queueOptions: {
         durable: true,
         arguments: {
-          'x-dead-letter-exchange': '',
-          'x-dead-letter-routing-key': 'notification_dlq',
+          'x-dead-letter-exchange': 'retry.exchange',
+          'x-dead-letter-routing-key': QUEUES.NOTIFY.RETRY,
         },
       },
     },
   });
 
-  app.listen()
-
+  app.listen();
 }
 bootstrap();

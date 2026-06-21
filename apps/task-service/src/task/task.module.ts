@@ -5,6 +5,7 @@ import { TaskServiceService } from "./task.service";
 import { TaskServiceController } from "./task.controller";
 import { ClientsModule, Transport } from "@nestjs/microservices";
 import { ConfigModule, ConfigService } from "@nestjs/config";
+import { QUEUES } from "@app/shared";
 
 @Module({
   imports: [
@@ -20,9 +21,13 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
           transport: Transport.RMQ,
           options: {
             urls: [config.get('RABBITMQ_URL')],
-            queue: 'notification_queue',
+            queue: QUEUES.NOTIFY.MAIN,
             queueOptions: {
               durable: true,
+              arguments: {
+                'x-dead-letter-exchange': 'retry.exchange',
+                'x-dead-letter-routing-key': QUEUES.NOTIFY.RETRY,
+              },
             },
           },
         }),
@@ -33,4 +38,4 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
   providers: [TaskServiceService],
   exports: [TaskServiceService],
 })
-export class TaskModule {}
+export class TaskModule { }

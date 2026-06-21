@@ -12,8 +12,8 @@ export class TaskServiceService {
 
     @Inject('NOTIFICATION_SERVICE')
     private readonly notificationClient: ClientProxy,
-  ) {}
-  
+  ) { }
+
   async create(body) {
     const task = await this.taskModel.create(body);
 

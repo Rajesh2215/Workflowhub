@@ -8,6 +8,7 @@
     "tsConfigPath": "apps/api-gateway/tsconfig.app.json"
   },
   "monorepo": true,
+  "defaultLibraryPrefix": "@app",
   "root": "apps/api-gateway",
   "projects": {
     "api-gateway": {
@@ -44,6 +45,15 @@
       "sourceRoot": "apps/notification-service/src",
       "compilerOptions": {
         "tsConfigPath": "apps/notification-service/tsconfig.app.json"
+      }
+    },
+    "shared": {
+      "type": "library",
+      "root": "libs/shared",
+      "entryFile": "index",
+      "sourceRoot": "libs/shared/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/shared/tsconfig.lib.json"
       }
     },
     "task-service": {

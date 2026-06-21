@@ -87,7 +87,8 @@
       "<rootDir>/libs/"
     ],
     "moduleNameMapper": {
-      "^@app/auth(|/.*)$": "<rootDir>/libs/auth/src/$1"
+      "^@app/auth(|/.*)$": "<rootDir>/libs/auth/src/$1",
+      "^@app/shared(|/.*)$": "<rootDir>/libs/shared/src/$1"
     }
   }
 }

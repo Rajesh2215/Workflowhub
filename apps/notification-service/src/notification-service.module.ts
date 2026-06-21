@@ -8,6 +8,7 @@ import {
   NotificationSchema,
 } from '../schema/create-notification.schema';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { RabbitmqSetupModule } from '@app/shared';
 
 // Added conif here becuase we dont have any apis for this , so we didnt configured in api-gateway's config
 @Module({
@@ -27,6 +28,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       { name: Notification.name, schema: NotificationSchema },
     ]),
     NotificationConfigModule,
+    RabbitmqSetupModule,
   ],
   controllers: [NotificationServiceController],
   providers: [NotificationServiceService],
