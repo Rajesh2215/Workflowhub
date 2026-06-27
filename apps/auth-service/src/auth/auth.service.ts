@@ -17,14 +17,17 @@ export class AuthServiceService {
     @InjectModel(Auth.name)
     private authModel: Model<AuthDocument>,
     private jwtService: JwtServiceCustom,
-  ) {}
+  ) { }
 
   async register(body) {
     const { name, email, password } = body;
 
     const existingUser = await this.authModel.findOne({ email });
     if (existingUser) {
-      throw new ConflictException('User already exists');
+      throw new RpcException({
+        statusCode: 409,
+        message: 'User already exists',
+      });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -73,5 +76,19 @@ export class AuthServiceService {
       message: 'Login successful',
       token,
     };
+  }
+
+  async deleteUser(userId: string) {
+    const user = await this.authModel.findByIdAndDelete(userId);
+    if (!user) {
+      throw new RpcException({
+        statusCode: 404,
+        message: `User with ID ${userId} not found for deletion`,
+      });
+    }
+    return {
+      message: 'User deleted successfully',
+      user,
+    }
   }
 }

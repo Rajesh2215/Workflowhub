@@ -1,6 +1,6 @@
 import { Controller } from '@nestjs/common';
 import { NotificationServiceService } from './notification-service.service';
-import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
+import { Ctx, EventPattern, MessagePattern, Payload, RmqContext, RpcException } from '@nestjs/microservices';
 import { QUEUES, EXCHANGES, getRetryCount, RedisService } from '@app/shared';
 
 @Controller()
@@ -61,6 +61,35 @@ export class NotificationServiceController {
         );
         channel.ack(message);
       }
+    }
+  }
+
+  @MessagePattern('notification.sendSaga')
+  async sendSaga(@Payload() data: any) {
+    try {
+      const notification = await this.notificationService.createNotification(data);
+      return {
+        message: 'Notification sent successfully via Saga',
+        notification,
+      };
+    } catch (error) {
+      throw new RpcException({
+        statusCode: 500,
+        message: error.message || 'Notification creation failed in Saga',
+      });
+    }
+  }
+
+  @MessagePattern('notification.deleteSaga')
+  async deleteNotification(@Payload() data: { notificationId: string }) {
+    try {
+      const result = await this.notificationService.deleteNotification(data.notificationId);
+      return result;
+    } catch (error) {
+      throw new RpcException({
+        statusCode: 404,
+        message: error.message || 'Notification deletion failed',
+      });
     }
   }
 }

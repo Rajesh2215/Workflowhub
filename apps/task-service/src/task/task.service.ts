@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Task, TaskDocument } from '../schemas/task.schema';
 import { Model } from 'mongoose';
-import { ClientProxy } from '@nestjs/microservices';
+import { ClientProxy, RpcException } from '@nestjs/microservices';
 
 @Injectable()
 export class TaskServiceService {
@@ -29,5 +29,31 @@ export class TaskServiceService {
       message: 'Task created successfully',
       task,
     };
+  }
+
+  async createSaga(body) {
+    const task = await this.taskModel.create(body)
+    if (!task) {
+      throw new RpcException({
+        statusCode: 400,
+        message: 'Task creation failed via Saga',
+      });
+    }
+
+    return {
+      message: 'Task created successfully via Saga',
+      task,
+    };
+  }
+
+  async deleteSaga(taskId: string) {
+    const result = await this.taskModel.findByIdAndDelete(taskId);
+    if (!result) {
+      throw new RpcException({
+        statusCode: 404,
+        message: `Task with ID ${taskId} not found for deletion`,
+      });
+    }
+    return { success: true, message: 'Task deleted successfully' };
   }
 }

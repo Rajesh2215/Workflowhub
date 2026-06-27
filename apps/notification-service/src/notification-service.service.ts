@@ -16,4 +16,20 @@ export class NotificationServiceService {
     return this.notificationModel.create(data)
 
   }
+
+  async createNotification(data: any) {
+    const result = await this.notificationModel.create(data)
+    if (!result) {
+      throw new Error('Notification creation failed in Saga')
+    }
+    return result
+  }
+
+  async deleteNotification(notificationId: string) {
+    const result = await this.notificationModel.findByIdAndDelete(notificationId);
+    if (!result) {
+      throw new Error(`Notification with ID ${notificationId} not found`);
+    }
+    return { success: true, message: 'Notification deleted successfully' };
+  }
 }
