@@ -83,6 +83,19 @@ services:
       - "9090:9090"
     networks:
       - backend
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    volumes:
+      - ./grafana-datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
+    ports:
+      - "3001:3000"
+    networks:
+      - backend
+    depends_on:
+      - prometheus
+
   mongo-auth:
     image: mongo:7
     container_name: mongo-auth
