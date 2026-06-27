@@ -1,12 +1,13 @@
 import { Controller } from '@nestjs/common';
 import { NotificationServiceService } from './notification-service.service';
 import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
-import { QUEUES, EXCHANGES, getRetryCount } from '@app/shared';
+import { QUEUES, EXCHANGES, getRetryCount, RedisService } from '@app/shared';
 
 @Controller()
 export class NotificationServiceController {
   constructor(
     private readonly notificationService: NotificationServiceService,
+    private readonly redisService: RedisService, // <-- Inject Redis
   ) { }
 
   @EventPattern('task.created')
@@ -16,10 +17,32 @@ export class NotificationServiceController {
     const headers = message.properties?.headers || {};
     const retryCount = getRetryCount(headers, QUEUES.NOTIFY.RETRY);
 
+    // 1. Idempotency Check using ioredis positional arguments
+    const redis = this.redisService.getClient();
+    const key = `event:${data.taskId || data.eventId}`; // or whichever field has the unique ID
+
+    const result = await redis.set(
+      key,
+      'processed',
+      'EX',
+      86400, // 24 Hours TTL
+      'NX'   // Only set if it doesn't exist
+    );
+
+    if (result !== 'OK') {
+      console.warn(`Duplicate event detected for taskId: ${data.taskId}. Skipping processing.`);
+      channel.ack(message);
+      return;
+    }
+
+    // 2. Process message
     try {
       await this.notificationService.handleTaskCreated(data);
       channel.ack(message);
     } catch (error) {
+      // 3. Clear Redis key if processing fails so we can retry
+      await redis.del(key);
+
       console.log("handleTaskCreated retryCount:", retryCount);
       if (retryCount < 3) {
         console.log(`Failed to process notification, dead-lettering to retry queue.`);

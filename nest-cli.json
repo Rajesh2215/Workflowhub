@@ -56,6 +56,15 @@
         "tsConfigPath": "libs/shared/tsconfig.lib.json"
       }
     },
+    "shared/redis": {
+      "type": "library",
+      "root": "libs/shared/redis",
+      "entryFile": "index",
+      "sourceRoot": "libs/shared/redis/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/shared/redis/tsconfig.lib.json"
+      }
+    },
     "task-service": {
       "type": "application",
       "root": "apps/task-service",

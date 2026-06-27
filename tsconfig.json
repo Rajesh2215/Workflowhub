@@ -33,6 +33,12 @@
       ],
       "@app/shared/*": [
         "libs/shared/src/*"
+      ],
+      "@app/shared/redis": [
+        "libs/shared/redis/src"
+      ],
+      "@app/shared/redis/*": [
+        "libs/shared/redis/src/*"
       ]
     }
   }

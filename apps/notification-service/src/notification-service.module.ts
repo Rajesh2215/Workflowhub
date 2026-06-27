@@ -8,7 +8,7 @@ import {
   NotificationSchema,
 } from '../schema/create-notification.schema';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { RabbitmqSetupModule } from '@app/shared';
+import { RabbitmqSetupModule, RedisModule } from '@app/shared';
 
 // Added conif here becuase we dont have any apis for this , so we didnt configured in api-gateway's config
 @Module({
@@ -29,8 +29,9 @@ import { RabbitmqSetupModule } from '@app/shared';
     ]),
     NotificationConfigModule,
     RabbitmqSetupModule,
+    RedisModule
   ],
   controllers: [NotificationServiceController],
   providers: [NotificationServiceService],
 })
-export class NotificationServiceModule {}
+export class NotificationServiceModule { }
