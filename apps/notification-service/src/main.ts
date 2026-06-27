@@ -1,3 +1,5 @@
+import { initTracer } from '@app/shared';
+initTracer('notification-service');
 import { NestFactory } from '@nestjs/core';
 import { NotificationServiceModule } from './notification-service.module';
 import { Transport } from '@nestjs/microservices';

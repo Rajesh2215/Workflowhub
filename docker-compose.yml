@@ -96,6 +96,15 @@ services:
     depends_on:
       - prometheus
 
+  jaeger: 
+    image: jaegertracing/all-in-one:latest
+    container_name: jaeger
+    ports:
+      - "16686:16686" # Web UI portal
+      - "4317:4317"   # OTLP gRPC port (receives traces)
+    networks:
+      - backend
+
   mongo-auth:
     image: mongo:7
     container_name: mongo-auth

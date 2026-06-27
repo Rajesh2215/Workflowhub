@@ -17,3 +17,4 @@ export * from './logging/correlation-client-rmq';
 export * from './logging/http-correlation.middleware';
 export * from './logging/rpc-correlation.interceptor';
 
+export * from './logging/tracer';

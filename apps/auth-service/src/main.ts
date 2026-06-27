@@ -1,3 +1,5 @@
+import { initTracer } from '@app/shared';
+initTracer('auth-service');
 import { NestFactory } from '@nestjs/core';
 import { AuthServiceModule } from './auth-service.module';
 import { Transport } from '@nestjs/microservices';

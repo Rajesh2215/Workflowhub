@@ -1,3 +1,5 @@
+import { initTracer } from '@app/shared';
+initTracer('task-service');
 import { NestFactory } from '@nestjs/core';
 import { TaskServiceModule } from './task-service.module';
 import { Transport } from '@nestjs/microservices';

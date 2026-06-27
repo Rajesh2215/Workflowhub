@@ -1,3 +1,5 @@
+import { initTracer } from '@app/shared';
+initTracer('api-gateway');
 import { NestFactory } from '@nestjs/core';
 import { ApiGatewayModule } from './api-gateway.module';
 import { ValidationPipe } from '@nestjs/common';
