@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { NotificationServiceModule } from './notification-service.module';
 import { Transport } from '@nestjs/microservices';
-import { QUEUES } from '@app/shared';
+import { QUEUES, AppLogger, RpcCorrelationIdInterceptor } from '@app/shared';
 
 async function bootstrap() {
   const app = await NestFactory.createMicroservice(NotificationServiceModule, {
@@ -18,8 +18,10 @@ async function bootstrap() {
         },
       },
     },
+    logger: new AppLogger(),
   });
 
-  app.listen();
+  app.useGlobalInterceptors(new RpcCorrelationIdInterceptor());
+  await app.listen();
 }
 bootstrap();

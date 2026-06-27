@@ -1,8 +1,9 @@
 import { Module } from '@nestjs/common';
-import { ClientsModule, Transport } from '@nestjs/microservices';
+import { ClientsModule } from '@nestjs/microservices';
 import { TaskController } from './task.controller';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthJwtModule } from '@app/auth';
+import { CorrelationIdClientRmq } from '@app/shared';
 
 @Module({
   imports: [
@@ -12,7 +13,7 @@ import { AuthJwtModule } from '@app/auth';
         imports: [ConfigModule],
         inject: [ConfigService],
         useFactory: (config: ConfigService) => ({
-          transport: Transport.RMQ,
+          customClass: CorrelationIdClientRmq,
           options: {
             urls: [config.get('RABBITMQ_URL')],
             queue: 'task_queue',

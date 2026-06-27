@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { AuthController } from './auth.controller';
-import { ClientsModule, Transport } from '@nestjs/microservices';
+import { ClientsModule } from '@nestjs/microservices';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { RegistrationSagaService } from './registration-saga.service';
-import { QUEUES } from '@app/shared';
+import { QUEUES, CorrelationIdClientRmq } from '@app/shared';
 
 @Module({
   imports: [
@@ -13,7 +13,7 @@ import { QUEUES } from '@app/shared';
         imports: [ConfigModule],
         inject: [ConfigService],
         useFactory: (config: ConfigService) => ({
-          transport: Transport.RMQ,
+          customClass: CorrelationIdClientRmq,
           options: {
             urls: [config.get('RABBITMQ_URL')],
             queue: 'auth_queue',
@@ -28,7 +28,7 @@ import { QUEUES } from '@app/shared';
         imports: [ConfigModule],
         inject: [ConfigService],
         useFactory: (config: ConfigService) => ({
-          transport: Transport.RMQ,
+          customClass: CorrelationIdClientRmq,
           options: {
             urls: [config.get('RABBITMQ_URL')],
             queue: 'notification_queue',
@@ -47,7 +47,7 @@ import { QUEUES } from '@app/shared';
         imports: [ConfigModule],
         inject: [ConfigService],
         useFactory: (config: ConfigService) => ({
-          transport: Transport.RMQ,
+          customClass: CorrelationIdClientRmq,
           options: {
             urls: [config.get('RABBITMQ_URL')],
             queue: 'task_queue',

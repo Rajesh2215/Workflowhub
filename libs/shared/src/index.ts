@@ -10,3 +10,10 @@ export * from './redis/redis.service';
 export * from './redis/redis.module';
 
 export * from './dto';
+
+export * from './logging/context';
+export * from './logging/app-logger';
+export * from './logging/correlation-client-rmq';
+export * from './logging/http-correlation.middleware';
+export * from './logging/rpc-correlation.interceptor';
+

@@ -1,10 +1,12 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Logger } from '@nestjs/common';
 import { NotificationServiceService } from './notification-service.service';
 import { Ctx, EventPattern, MessagePattern, Payload, RmqContext, RpcException } from '@nestjs/microservices';
 import { QUEUES, EXCHANGES, getRetryCount, RedisService } from '@app/shared';
 
 @Controller()
 export class NotificationServiceController {
+  private readonly logger = new Logger(NotificationServiceController.name);
+
   constructor(
     private readonly notificationService: NotificationServiceService,
     private readonly redisService: RedisService, // <-- Inject Redis
@@ -67,6 +69,7 @@ export class NotificationServiceController {
   @MessagePattern('notification.sendSaga')
   async sendSaga(@Payload() data: any) {
     try {
+      this.logger.log(`Sending welcome notification via Saga for user: ${data.userId}`);
       const notification = await this.notificationService.createNotification(data);
       return {
         message: 'Notification sent successfully via Saga',

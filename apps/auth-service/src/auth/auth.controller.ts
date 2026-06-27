@@ -1,14 +1,17 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Controller, Logger } from '@nestjs/common';
 import { AuthServiceService } from './auth.service';
 import { RegisterDto, LoginDto } from '@app/shared';
 import { MessagePattern } from '@nestjs/microservices';
 
 @Controller('auth')
 export class AuthServiceController {
+  private readonly logger = new Logger(AuthServiceController.name);
+
   constructor(private readonly authService: AuthServiceService) { }
 
   @MessagePattern('auth.register')
   register(body: RegisterDto) {
+    this.logger.log(`Registering user with email: ${body.email}`);
     return this.authService.register(body);
   }
 

@@ -1,10 +1,12 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Logger } from '@nestjs/common';
 import { TaskServiceService } from './task.service';
 import { MessagePattern } from '@nestjs/microservices';
 import { TaskDto } from '@app/shared';
 
 @Controller('task')
 export class TaskServiceController {
+  private readonly logger = new Logger(TaskServiceController.name);
+
   constructor(private readonly taskService: TaskServiceService) { }
 
   @MessagePattern('task.create')
@@ -18,7 +20,8 @@ export class TaskServiceController {
   }
 
   @MessagePattern('task.createSaga')
-  createSaga(data: TaskDto) {
+  createSaga(data: any) {
+    this.logger.log(`Creating welcome task via Saga for user: ${data.userId}`);
     return this.taskService.createSaga(data);
   }
 

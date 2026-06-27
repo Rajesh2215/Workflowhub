@@ -3,9 +3,9 @@ import { MongooseModule } from "@nestjs/mongoose";
 import { Task, TaskSchema } from "../schemas/task.schema";
 import { TaskServiceService } from "./task.service";
 import { TaskServiceController } from "./task.controller";
-import { ClientsModule, Transport } from "@nestjs/microservices";
+import { ClientsModule } from "@nestjs/microservices";
 import { ConfigModule, ConfigService } from "@nestjs/config";
-import { QUEUES } from "@app/shared";
+import { QUEUES, CorrelationIdClientRmq } from "@app/shared";
 
 @Module({
   imports: [
@@ -18,7 +18,7 @@ import { QUEUES } from "@app/shared";
         imports: [ConfigModule],
         inject: [ConfigService],
         useFactory: (config: ConfigService) => ({
-          transport: Transport.RMQ,
+          customClass: CorrelationIdClientRmq,
           options: {
             urls: [config.get('RABBITMQ_URL')],
             queue: QUEUES.NOTIFY.MAIN,
