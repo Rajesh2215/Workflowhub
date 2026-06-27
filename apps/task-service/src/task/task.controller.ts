@@ -12,6 +12,11 @@ export class TaskServiceController {
     return this.taskService.create(body);
   }
 
+  @MessagePattern('task.findAllByUserId')
+  findAllByUserId(body: { userId: string }) {
+    return this.taskService.findAllByUserId(body.userId);
+  }
+
   @MessagePattern('task.createSaga')
   createSaga(data: TaskDto) {
     return this.taskService.createSaga(data);

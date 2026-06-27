@@ -3,15 +3,26 @@ import { AppController } from './api-gateway.controller';
 import { AppService } from './api-gateway.service';
 import { AuthModule } from './auth/auth.module';
 import { TaskModule } from './task/̉task.module';
-import { RabbitmqSetupModule } from '@app/shared';
+import { RabbitmqSetupModule, RedisModule } from '@app/shared';
+import { RedisThrottlerGuard } from './common/guards/redis-throttler.guard';
+import { APP_GUARD } from '@nestjs/core';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({ isGlobal: true, envFilePath: 'apps/api-gateway/.env' }),
     AuthModule,
     TaskModule,
-    RabbitmqSetupModule
+    RabbitmqSetupModule,
+    RedisModule
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: RedisThrottlerGuard,
+    },
+  ],
 })
-export class ApiGatewayModule {}
+export class ApiGatewayModule { }

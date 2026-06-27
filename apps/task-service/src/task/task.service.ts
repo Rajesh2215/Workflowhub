@@ -31,6 +31,14 @@ export class TaskServiceService {
     };
   }
 
+  async findAllByUserId(userId: string) {
+    const tasks = await this.taskModel.find({ userId });
+
+    return {
+      message: 'Tasks fetched successfully',
+      tasks,
+    };
+  }
   async createSaga(body) {
     const task = await this.taskModel.create(body)
     if (!task) {
