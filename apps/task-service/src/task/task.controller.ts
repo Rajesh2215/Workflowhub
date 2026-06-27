@@ -1,7 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
 import { TaskServiceService } from './task.service';
 import { MessagePattern } from '@nestjs/microservices';
-import { TaskDto } from '../dto/create-task.dto';
+import { TaskDto } from '@app/shared';
 
 @Controller('task')
 export class TaskServiceController {

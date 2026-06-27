@@ -2,6 +2,7 @@ import { Body, Controller, HttpException, Inject, Post } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { catchError } from 'rxjs';
 import { RegistrationSagaService } from './registration-saga.service';
+import { RegisterDto, LoginDto } from '@app/shared'; // <-- Import DTOs
 
 @Controller('auth')
 export class AuthController {
@@ -12,7 +13,7 @@ export class AuthController {
   ) { }
 
   @Post('register')
-  register(@Body() body: any) {
+  register(@Body() body: RegisterDto) {
     return this.authClient.send('auth.register', body).pipe(
       catchError((err) => {
         console.log('🚀 ~ AuthController ~ register ~ err:', err);
@@ -26,7 +27,7 @@ export class AuthController {
 
   // Use same api for Saga pattern
   @Post('login')
-  login(@Body() body: any) {
+  login(@Body() body: LoginDto) {
     return this.authClient.send('auth.login', body).pipe(
       catchError((err) => {
         console.log('🚀 ~ AuthController ~ login ~ err:', err);
@@ -39,7 +40,7 @@ export class AuthController {
   }
 
   @Post('register-saga')
-  registerSaga(@Body() body: any) {
+  registerSaga(@Body() body: RegisterDto) {
     return this.registrationSagaService.executeRegistrationSaga(body);
   }
 }
