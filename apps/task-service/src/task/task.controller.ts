@@ -1,6 +1,6 @@
 import { Controller, Logger } from '@nestjs/common';
 import { TaskServiceService } from './task.service';
-import { MessagePattern } from '@nestjs/microservices';
+import { GrpcMethod } from '@nestjs/microservices';
 import { TaskDto } from '@app/shared';
 
 @Controller('task')
@@ -9,24 +9,58 @@ export class TaskServiceController {
 
   constructor(private readonly taskService: TaskServiceService) { }
 
-  @MessagePattern('task.create')
-  create(body: TaskDto) {
-    return this.taskService.create(body);
+  @GrpcMethod('TaskService', 'CreateTask')
+  async grpcCreateTask(data: TaskDto) {
+    this.logger.log(`[gRPC] Creating task: ${data.title}`);
+    const result = await this.taskService.create(data);
+    return {
+      id: result.task._id.toString(),
+      title: result.task.title,
+      description: result.task.description,
+      userId: result.task.userId,
+      message: result.message,
+    };
   }
 
-  @MessagePattern('task.findAllByUserId')
-  findAllByUserId(body: { userId: string }) {
-    return this.taskService.findAllByUserId(body.userId);
+  @GrpcMethod('TaskService', 'GetTasks')
+  async grpcGetTasks(data: { userId: string }) {
+    this.logger.log(`[gRPC] Getting tasks for user: ${data.userId}`);
+    const result = await this.taskService.findAllByUserId(data.userId);
+    this.logger.log(`[gRPC] Found ${result.tasks?.length} tasks in DB`);
+    const mappedTasks = result.tasks.map((task) => ({
+      id: task._id.toString(),
+      title: task.title || '',
+      description: task.description || '',
+      userId: task.userId || '',
+      message: '',
+    }));
+    this.logger.log(`[gRPC] Mapped tasks: ${JSON.stringify(mappedTasks)}`);
+    return {
+      message: result.message,
+      tasks: mappedTasks,
+    };
   }
 
-  @MessagePattern('task.createSaga')
-  createSaga(data: any) {
-    this.logger.log(`Creating welcome task via Saga for user: ${data.userId}`);
-    return this.taskService.createSaga(data);
+  @GrpcMethod('TaskService', 'CreateSaga')
+  async grpcCreateSaga(data: { userId: string; title: string; description: string }) {
+    this.logger.log(`[gRPC] Creating welcome task via Saga for user: ${data.userId}`);
+    const result = await this.taskService.createSaga(data);
+    return {
+      id: result.task._id.toString(),
+      title: result.task.title,
+      description: result.task.description,
+      userId: result.task.userId,
+      message: result.message,
+    };
   }
 
-  @MessagePattern('task.deleteSaga')
-  deleteSaga(data: { taskId: string }) {
-    return this.taskService.deleteSaga(data.taskId)
+  @GrpcMethod('TaskService', 'DeleteSaga')
+  async grpcDeleteSaga(data: { taskId: string }) {
+    this.logger.log(`[gRPC] Deleting task via Saga: ${data.taskId}`);
+    const result = await this.taskService.deleteSaga(data.taskId);
+    return {
+      success: result.success,
+      message: result.message,
+    };
   }
 }

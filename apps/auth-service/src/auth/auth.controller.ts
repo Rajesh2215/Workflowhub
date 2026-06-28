@@ -1,7 +1,7 @@
 import { Controller, Logger } from '@nestjs/common';
 import { AuthServiceService } from './auth.service';
 import { RegisterDto, LoginDto } from '@app/shared';
-import { MessagePattern } from '@nestjs/microservices';
+import { GrpcMethod } from '@nestjs/microservices';
 
 @Controller('auth')
 export class AuthServiceController {
@@ -9,19 +9,37 @@ export class AuthServiceController {
 
   constructor(private readonly authService: AuthServiceService) { }
 
-  @MessagePattern('auth.register')
-  register(body: RegisterDto) {
-    this.logger.log(`Registering user with email: ${body.email}`);
-    return this.authService.register(body);
+  @GrpcMethod('AuthService', 'Register')
+  async grpcRegister(data: RegisterDto) {
+    this.logger.log(`[gRPC] Registering user: ${data.email}`);
+    const result = await this.authService.register(data);
+    return {
+      token: result.token,
+      message: result.message,
+      user: {
+        id: result.user._id.toString(),
+        name: result.user.name,
+        email: result.user.email,
+      },
+    };
   }
 
-  @MessagePattern('auth.login')
-  login(body: LoginDto) {
-    return this.authService.login(body);
+  @GrpcMethod('AuthService', 'Login')
+  async grpcLogin(data: LoginDto) {
+    this.logger.log(`[gRPC] Log in user: ${data.email}`);
+    const result = await this.authService.login(data);
+    return {
+      token: result.token,
+      message: result.message,
+    };
   }
 
-  @MessagePattern('auth.deleteUser')
-  deleteUser(data: { userId: string }) {
-    return this.authService.deleteUser(data.userId);
+  @GrpcMethod('AuthService', 'DeleteUser')
+  async grpcDeleteUser(data: { userId: string }) {
+    this.logger.log(`[gRPC] Deleting user: ${data.userId}`);
+    const result = await this.authService.deleteUser(data.userId);
+    return {
+      message: result.message,
+    };
   }
 }

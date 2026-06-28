@@ -26,10 +26,17 @@ export class RpcCorrelationIdInterceptor implements NestInterceptor {
     }
 
     if (!correlationId) {
-      const rmqContext = rpcContext.getContext();
-      if (rmqContext && typeof rmqContext.getMessage === 'function') {
-        const message = rmqContext.getMessage();
-        correlationId = message?.properties?.headers?.['x-correlation-id'];
+      const rpcCtx = rpcContext.getContext();
+      if (rpcCtx) {
+        if (typeof rpcCtx.get === 'function') {
+          const ids = rpcCtx.get('x-correlation-id');
+          if (ids && ids.length > 0) {
+            correlationId = ids[0] as string;
+          }
+        } else if (typeof rpcCtx.getMessage === 'function') {
+          const message = rpcCtx.getMessage();
+          correlationId = message?.properties?.headers?.['x-correlation-id'];
+        }
       }
     }
 

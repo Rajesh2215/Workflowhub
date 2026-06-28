@@ -1,25 +1,36 @@
-import { Body, Controller, HttpException, Inject, Post } from '@nestjs/common';
-import { ClientProxy } from '@nestjs/microservices';
+import { Body, Controller, HttpException, Inject, Post, OnModuleInit } from '@nestjs/common';
+import type { ClientGrpc } from '@nestjs/microservices';
 import { catchError } from 'rxjs';
 import { RegistrationSagaService } from './registration-saga.service';
-import { RegisterDto, LoginDto } from '@app/shared'; // <-- Import DTOs
+import { RegisterDto, LoginDto, getGrpcMetadata } from '@app/shared'; // <-- Import DTOs and metadata helper
+
+interface AuthServiceClient {
+  register(data: RegisterDto, metadata?: any): any;
+  login(data: LoginDto, metadata?: any): any;
+}
 
 @Controller('auth')
-export class AuthController {
+export class AuthController implements OnModuleInit {
+  private authService: AuthServiceClient;
+
   constructor(
     @Inject('AUTH_SERVICE')
-    private readonly authClient: ClientProxy,
+    private readonly authClient: ClientGrpc,
     private readonly registrationSagaService: RegistrationSagaService,
   ) { }
 
+  onModuleInit() {
+    this.authService = this.authClient.getService<AuthServiceClient>('AuthService');
+  }
+
   @Post('register')
   register(@Body() body: RegisterDto) {
-    return this.authClient.send('auth.register', body).pipe(
+    return this.authService.register(body, getGrpcMetadata()).pipe(
       catchError((err) => {
         console.log('🚀 ~ AuthController ~ register ~ err:', err);
         throw new HttpException(
-          err.message || 'Authentication failed',
-          err.statusCode || 500,
+          err.details || err.message || 'Authentication failed',
+          err.code === 6 ? 409 : (err.code === 3 ? 400 : 500),
         );
       }),
     );
@@ -28,12 +39,12 @@ export class AuthController {
   // Use same api for Saga pattern
   @Post('login')
   login(@Body() body: LoginDto) {
-    return this.authClient.send('auth.login', body).pipe(
+    return this.authService.login(body, getGrpcMetadata()).pipe(
       catchError((err) => {
         console.log('🚀 ~ AuthController ~ login ~ err:', err);
         throw new HttpException(
-          err.message || 'Authentication failed',
-          err.statusCode || 500,
+          err.details || err.message || 'Authentication failed',
+          err.code === 5 ? 404 : (err.code === 16 ? 401 : 500),
         );
       }),
     );

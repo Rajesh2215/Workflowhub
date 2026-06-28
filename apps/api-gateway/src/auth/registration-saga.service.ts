@@ -1,18 +1,36 @@
-import { HttpException, HttpStatus, Inject, Injectable, Logger } from "@nestjs/common";
+import { HttpException, HttpStatus, Inject, Injectable, Logger, OnModuleInit } from "@nestjs/common";
 import { ClientProxy } from "@nestjs/microservices";
+import type { ClientGrpc } from "@nestjs/microservices";
 import { firstValueFrom } from "rxjs";
+import { getGrpcMetadata } from "@app/shared";
+
+interface AuthServiceClient {
+  register(data: any, metadata?: any): any;
+  deleteUser(data: { userId: string }, metadata?: any): any;
+}
+
+interface TaskServiceClient {
+  createSaga(data: any, metadata?: any): any;
+  deleteSaga(data: { taskId: string }, metadata?: any): any;
+}
 
 @Injectable()
-export class RegistrationSagaService {
+export class RegistrationSagaService implements OnModuleInit {
 
   private readonly logger = new Logger(RegistrationSagaService.name);
+  private authService: AuthServiceClient;
+  private taskService: TaskServiceClient;
+
   constructor(
-
-    @Inject('AUTH_SERVICE') private readonly authClient: ClientProxy,
+    @Inject('AUTH_SERVICE') private readonly authClient: ClientGrpc,
     @Inject('NOTIFICATION_SERVICE') private readonly notificationClient: ClientProxy,
-    @Inject('TASK_SERVICE') private readonly taskClient: ClientProxy,
-
+    @Inject('TASK_SERVICE') private readonly taskClient: ClientGrpc,
   ) { }
+
+  onModuleInit() {
+    this.authService = this.authClient.getService<AuthServiceClient>('AuthService');
+    this.taskService = this.taskClient.getService<TaskServiceClient>('TaskService');
+  }
 
   async executeRegistrationSaga(registerDto: any) {
     const rollbackActions: { name: string; action: () => Promise<any> }[] = [];
@@ -21,8 +39,8 @@ export class RegistrationSagaService {
       this.logger.log('Step 1: Creating User in auth-service...');
 
       // Step 1: Create User in auth-service
-      const authResponse = await firstValueFrom<any>(this.authClient.send('auth.register', registerDto));
-      const userId = authResponse?.user?._id;
+      const authResponse = await firstValueFrom<any>(this.authService.register(registerDto, getGrpcMetadata()));
+      const userId = authResponse?.user?.id;
 
       if (!userId) {
         throw new Error('User creation succeeded but no userId was returned.');
@@ -32,28 +50,28 @@ export class RegistrationSagaService {
       // Register the rollback action for Step 1
       rollbackActions.push({
         name: 'Delete User from auth-service',
-        action: () => firstValueFrom(this.authClient.send('auth.deleteUser', { userId })),
+        action: () => firstValueFrom(this.authService.deleteUser({ userId }, getGrpcMetadata())),
       });
 
 
       //  Step 2: Create Welcome Task in task-service
       this.logger.log(`Step 2: Creating Welcome Task for user: ${userId}...`);
 
-      const taskResponse = await firstValueFrom<any>(this.taskClient.send('task.createSaga', {
+      const taskResponse = await firstValueFrom<any>(this.taskService.createSaga({
         title: 'Welcome to WorkflowHub',
         description: `Welcome ${authResponse.user.name} to WorkflowHub. To get started, please complete the following steps`,
         userId
-      }))
+      }, getGrpcMetadata()));
 
-      const taskId = taskResponse?.task?._id;
+      const taskId = taskResponse?.id;
       if (!taskId) {
-        throw new Error('Task creation failed: No taskId returned')
+        throw new Error('Task creation failed: No taskId returned');
       }
 
       // Register the rollback action for Step 2
       rollbackActions.push({
         name: 'Delete Task from task-service',
-        action: () => firstValueFrom(this.taskClient.send('task.deleteSaga', { taskId })),
+        action: () => firstValueFrom(this.taskService.deleteSaga({ taskId }, getGrpcMetadata())),
       });
 
       // Step 3: Create Welcome Notification in notification-service
@@ -65,7 +83,7 @@ export class RegistrationSagaService {
         title: 'Welcome to WorkflowHub!',
         message: `Hello ${authResponse.user.name}, your account is ready.`,
         type: 'EMAIL',
-      }))
+      }));
 
       const notificationId = notificationResponse?.notification?._id;
       // Register the rollback action for Step 3 (optional, in case of cleanup)

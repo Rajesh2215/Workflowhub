@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { ClientsModule } from '@nestjs/microservices';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 import { TaskController } from './task.controller';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthJwtModule } from '@app/auth';
-import { CorrelationIdClientRmq } from '@app/shared';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -12,14 +12,12 @@ import { CorrelationIdClientRmq } from '@app/shared';
         name: 'TASK_SERVICE',
         imports: [ConfigModule],
         inject: [ConfigService],
-        useFactory: (config: ConfigService) => ({
-          customClass: CorrelationIdClientRmq,
+                useFactory: (config: ConfigService) => ({
+          transport: Transport.GRPC,
           options: {
-            urls: [config.get('RABBITMQ_URL')],
-            queue: 'task_queue',
-            queueOptions: {
-              durable: true,
-            },
+            package: 'task',
+            protoPath: join(__dirname, '../../../libs/shared/src/proto/task.proto'),
+            url: config.get('TASK_SERVICE_GRPC_URL') || 'localhost:50052',
           },
         }),
       },

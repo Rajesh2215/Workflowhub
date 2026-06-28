@@ -2,18 +2,17 @@ import { initTracer } from '@app/shared';
 initTracer('auth-service');
 import { NestFactory } from '@nestjs/core';
 import { AuthServiceModule } from './auth-service.module';
-import { Transport } from '@nestjs/microservices';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { AppLogger, RpcCorrelationIdInterceptor } from '@app/shared';
+import { join } from 'path';
 
 async function bootstrap() {
-  const app = await NestFactory.createMicroservice(AuthServiceModule, {
-    transport: Transport.RMQ,
+  const app = await NestFactory.createMicroservice<MicroserviceOptions>(AuthServiceModule, {
+    transport: Transport.GRPC,
     options: {
-      urls: [process.env.RABBITMQ_URL],
-      queue: 'auth_queue',
-      queueOptions: {
-        durable: true,
-      },
+      package: 'auth',
+      protoPath: join(__dirname, '../../../libs/shared/src/proto/auth.proto'),
+      url: '0.0.0.0:50051',
     },
     logger: new AppLogger(),
   });
@@ -21,4 +20,4 @@ async function bootstrap() {
   app.useGlobalInterceptors(new RpcCorrelationIdInterceptor());
   await app.listen();
 }
-bootstrap()
+bootstrap();

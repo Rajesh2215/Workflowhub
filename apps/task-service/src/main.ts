@@ -2,18 +2,17 @@ import { initTracer } from '@app/shared';
 initTracer('task-service');
 import { NestFactory } from '@nestjs/core';
 import { TaskServiceModule } from './task-service.module';
-import { Transport } from '@nestjs/microservices';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { AppLogger, RpcCorrelationIdInterceptor } from '@app/shared';
+import { join } from 'path';
 
 async function bootstrap() {
-  const app = await NestFactory.createMicroservice(TaskServiceModule, {
-    transport: Transport.RMQ,
+  const app = await NestFactory.createMicroservice<MicroserviceOptions>(TaskServiceModule, {
+    transport: Transport.GRPC,
     options: {
-      urls: [process.env.RABBITMQ_URL],
-      queue: 'task_queue',
-      queueOptions: {
-        durable: true,
-      },
+      package: 'task',
+      protoPath: join(__dirname, '../../../libs/shared/src/proto/task.proto'),
+      url: '0.0.0.0:50052', // Port 50052 for Task service
     },
     logger: new AppLogger(),
   });
@@ -21,4 +20,4 @@ async function bootstrap() {
   app.useGlobalInterceptors(new RpcCorrelationIdInterceptor());
   await app.listen();
 }
-bootstrap()
+bootstrap();

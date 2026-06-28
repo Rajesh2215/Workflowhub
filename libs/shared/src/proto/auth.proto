@@ -1,0 +1,39 @@
+syntax = "proto3";
+package auth;
+
+service AuthService {
+  rpc Register (RegisterRequest) returns (AuthResponse);
+  rpc Login (LoginRequest) returns (AuthResponse);
+  rpc DeleteUser (DeleteUserRequest) returns (DeleteUserResponse);
+}
+
+message RegisterRequest {
+  string email = 1;
+  string password = 2;
+  string name = 3;
+}
+
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message DeleteUserRequest {
+  string userId = 1;
+}
+
+message DeleteUserResponse {
+  string message = 1;
+}
+
+message UserData {
+  string id = 1;
+  string name = 2;
+  string email = 3;
+}
+
+message AuthResponse {
+  string token = 1;
+  string message = 2;
+  UserData user = 3;
+}

@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
 import { AuthController } from './auth.controller';
-import { ClientsModule } from '@nestjs/microservices';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { RegistrationSagaService } from './registration-saga.service';
 import { QUEUES, CorrelationIdClientRmq } from '@app/shared';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -12,14 +13,12 @@ import { QUEUES, CorrelationIdClientRmq } from '@app/shared';
         name: 'AUTH_SERVICE',
         imports: [ConfigModule],
         inject: [ConfigService],
-        useFactory: (config: ConfigService) => ({
-          customClass: CorrelationIdClientRmq,
+                useFactory: (config: ConfigService) => ({
+          transport: Transport.GRPC,
           options: {
-            urls: [config.get('RABBITMQ_URL')],
-            queue: 'auth_queue',
-            queueOptions: {
-              durable: true,
-            },
+            package: 'auth',
+            protoPath: join(__dirname, '../../../libs/shared/src/proto/auth.proto'),
+            url: config.get('AUTH_SERVICE_GRPC_URL') || 'localhost:50051',
           },
         }),
       },
@@ -47,13 +46,11 @@ import { QUEUES, CorrelationIdClientRmq } from '@app/shared';
         imports: [ConfigModule],
         inject: [ConfigService],
         useFactory: (config: ConfigService) => ({
-          customClass: CorrelationIdClientRmq,
+          transport: Transport.GRPC,
           options: {
-            urls: [config.get('RABBITMQ_URL')],
-            queue: 'task_queue',
-            queueOptions: {
-              durable: true,
-            },
+            package: 'task',
+            protoPath: join(__dirname, '../../../libs/shared/src/proto/task.proto'),
+            url: config.get('TASK_SERVICE_GRPC_URL') || 'localhost:50052',
           },
         }),
       },
